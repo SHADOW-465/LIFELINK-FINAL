@@ -30,7 +30,7 @@ export default function MotionWrapper({
             transition: {
                 duration: 0.5,
                 delay: delay,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         },
         exit: {

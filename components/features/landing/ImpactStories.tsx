@@ -108,7 +108,7 @@ export default function ImpactStories() {
 
                                     <div className="flex-1 text-center md:text-left">
                                         <p className="text-lg md:text-xl text-gray-700 italic mb-6 leading-relaxed">
-                                            "{stories[currentIndex].content}"
+                                            &quot;{stories[currentIndex].content}&quot;
                                         </p>
                                         <div>
                                             <h3 className="text-xl font-bold text-foreground">{stories[currentIndex].name}</h3>
