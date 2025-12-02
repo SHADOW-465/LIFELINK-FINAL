@@ -1,17 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { FileText, Plus, Search, MapPin, Clock, User, AlertTriangle, Droplets, Navigation } from 'lucide-react';
+import { FileText, Plus, Search, MapPin, Clock, AlertTriangle, Droplets, Navigation, QrCode } from 'lucide-react';
 import Link from 'next/link';
 import MotionWrapper from '@/components/ui/MotionWrapper';
 import ShareButton from '@/components/ui/ShareButton';
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { QRCodeSVG } from 'qrcode.react';
 
 type RequestWithDistance = Doc<"bloodRequests"> & { distance?: number };
 
@@ -37,9 +58,11 @@ export default function RequestsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isDonating, setIsDonating] = useState<string | null>(null);
 
   const allRequests = useQuery(api.requests.getAllRequests);
   const userRequests = useQuery(api.requests.getUserRequests);
+  const donate = useMutation(api.requests.donateToRequest);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -54,6 +77,19 @@ export default function RequestsPage() {
       );
     }
   }, []);
+
+  const handleDonate = async (requestId: Id<"bloodRequests">) => {
+    setIsDonating(requestId);
+    try {
+      await donate({ requestId });
+      toast.success("Thank you! You have successfully volunteered to donate.");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to process donation. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsDonating(null);
+    }
+  };
 
   const getFilteredAndSortedRequests = () => {
     if (!allRequests) return [];
@@ -183,10 +219,35 @@ export default function RequestsPage() {
                               )}
                             </div>
                           </div>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-end gap-2">
                             <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600 font-bold border-2 border-red-200 dark:border-red-800">
                               {request.bloodType}
                             </div>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                                        <QrCode className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Share Request</DialogTitle>
+                                        <DialogDescription>
+                                            Scan this QR code to share or verify this blood request.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="flex items-center justify-center p-6">
+                                        <div className="bg-white p-4 rounded-lg">
+                                            <QRCodeSVG value={`https://lifelink-pwa.vercel.app/requests/${request._id}`} size={200} />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-center">
+                                        <p className="text-xs text-muted-foreground break-all text-center">
+                                            ID: {request._id}
+                                        </p>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                           </div>
                         </div>
 
@@ -203,10 +264,36 @@ export default function RequestsPage() {
 
                         <div className="flex gap-2">
                           {!request.isFulfilled ? (
-                            <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-red-200 dark:shadow-none shadow-lg">
-                              <AlertTriangle className="w-4 h-4 mr-2" />
-                              Donate
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-red-200 dark:shadow-none shadow-lg"
+                                  disabled={isDonating === request._id}
+                                >
+                                  {isDonating === request._id ? 'Processing...' : (
+                                    <>
+                                      <AlertTriangle className="w-4 h-4 mr-2" />
+                                      Donate
+                                    </>
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirm Donation</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to volunteer to donate for this request?
+                                    By clicking continue, you confirm that you are available and willing to donate blood.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDonate(request._id)}>
+                                    Confirm Donation
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           ) : (
                             <Button variant="outline" className="flex-1 rounded-xl" disabled>
                               Completed
