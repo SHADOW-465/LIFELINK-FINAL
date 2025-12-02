@@ -3,21 +3,25 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Calendar, FileText, User, Plus } from "lucide-react"
+import { Home, Calendar, FileText, User, Plus, Bell, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "./ThemeToggle"
 import { UserButton } from "@clerk/nextjs"
 
 const navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'Schedule', href: '/schedule', icon: Calendar },
+    { name: 'Messages', href: '/messages', icon: MessageSquare },
     { name: 'Requests', href: '/requests', icon: FileText },
+    { name: 'Notifications', href: '/notifications', icon: Bell },
     { name: 'Profile', href: '/profile', icon: User },
 ]
 
 export function Sidebar() {
     const pathname = usePathname()
+    const unreadCount = useQuery(api.notifications.getUnreadCount) || 0;
 
     return (
         <div className="hidden md:flex flex-col h-screen w-64 bg-card border-r border-border fixed left-0 top-0 z-50 px-4 py-6">
@@ -63,7 +67,12 @@ export function Sidebar() {
                                     />
                                 )}
                                 <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "group-hover:text-foreground transition-colors")} />
-                                <span>{item.name}</span>
+                                <span className="flex-1">{item.name}</span>
+                                {item.name === 'Notifications' && unreadCount > 0 && (
+                                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                        {unreadCount}
+                                    </span>
+                                )}
                             </div>
                         </Link>
                     )

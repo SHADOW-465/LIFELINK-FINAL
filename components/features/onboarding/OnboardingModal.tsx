@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Heart, Loader2 } from 'lucide-react';
 import {
   Select,
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUser } from '@clerk/nextjs';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -26,13 +28,14 @@ const BLOOD_TYPES = [
   'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
 ];
 
-import { useUser } from '@clerk/nextjs';
-
 export default function OnboardingModal({ isOpen, userEmail, onComplete }: OnboardingModalProps) {
   const { user } = useUser();
   const [step, setStep] = useState(1);
   const [fullName, setFullName] = useState('');
   const [bloodType, setBloodType] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationError, setLocationError] = useState('');
@@ -64,7 +67,7 @@ export default function OnboardingModal({ isOpen, userEmail, onComplete }: Onboa
   };
 
   const handleSubmit = async () => {
-    if (!fullName.trim() || !bloodType || !user?.id) return;
+    if (!fullName.trim() || !bloodType || !user?.id || !agreedToTerms) return;
 
     setIsSubmitting(true);
     try {
@@ -109,7 +112,7 @@ export default function OnboardingModal({ isOpen, userEmail, onComplete }: Onboa
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300">
-      <Card className="w-full max-w-md bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-white/20 shadow-2xl animate-in fade-in zoom-in duration-300">
+      <Card className="w-full max-w-md bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-white/20 shadow-2xl animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto w-16 h-16 bg-red-100/80 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 shadow-inner">
             <Heart className="w-8 h-8 text-red-600 dark:text-red-500 fill-current" />
@@ -126,7 +129,7 @@ export default function OnboardingModal({ isOpen, userEmail, onComplete }: Onboa
         </CardHeader>
         <CardContent>
           {step === 1 ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-gray-800 dark:text-gray-200 font-semibold">Full Name</Label>
                 <Input
@@ -138,6 +141,32 @@ export default function OnboardingModal({ isOpen, userEmail, onComplete }: Onboa
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="age" className="text-gray-800 dark:text-gray-200 font-semibold">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="Age"
+                    className="bg-white/50 dark:bg-black/50 border-gray-200 dark:border-gray-700 focus:ring-red-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="text-gray-800 dark:text-gray-200 font-semibold">Gender</Label>
+                   <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger className="w-full bg-white/50 dark:bg-black/50 border-gray-200 dark:border-gray-700 focus:ring-red-500 text-gray-900 dark:text-white">
+                      <SelectValue placeholder="Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="bloodType" className="text-gray-800 dark:text-gray-200 font-semibold">Blood Type</Label>
@@ -155,17 +184,36 @@ export default function OnboardingModal({ isOpen, userEmail, onComplete }: Onboa
                 </Select>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex items-start space-x-2 pt-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Accept Terms and Conditions
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    I agree to the privacy policy and consent to share my blood group details with potential recipients.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
                 <Button
                   variant="outline"
                   className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200"
                   onClick={handleSkip}
                 >
-                  Skip for Now
+                  Skip
                 </Button>
                 <Button
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
-                  disabled={!fullName.trim() || !bloodType}
+                  disabled={!fullName.trim() || !bloodType || !agreedToTerms}
                   onClick={() => setStep(2)}
                 >
                   Next

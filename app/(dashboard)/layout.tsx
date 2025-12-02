@@ -2,11 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/ui/Sidebar';
-import { Home, Calendar, FileText, User, Plus } from 'lucide-react';
+import { Home, MessageSquare, FileText, User, Plus, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import React from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,22 +16,41 @@ interface DashboardLayoutProps {
 
 const navigation = [
   { name: 'Home', href: '/dashboard', icon: Home },
-  { name: 'Schedule', href: '/schedule', icon: Calendar },
+  { name: 'Messages', href: '/messages', icon: MessageSquare },
   { name: 'Requests', href: '/requests', icon: FileText },
   { name: 'Profile', href: '/profile', icon: User },
 ];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
+  const unreadCount = useQuery(api.notifications.getUnreadCount) || 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background pb-24 md:pb-0">
+
+      {/* Mobile Top Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 h-16 flex items-center justify-between">
+         <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                L
+            </div>
+            <span className="font-bold text-lg">LifeLink</span>
+         </div>
+         <Link href="/notifications">
+            <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+            </Button>
+         </Link>
+      </div>
 
       {/* Desktop Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <main className="container mx-auto max-w-md md:max-w-none md:ml-64 md:w-[calc(100%-16rem)] md:p-8 transition-all duration-300">
+      <main className="container mx-auto max-w-md md:max-w-none md:ml-64 md:w-[calc(100%-16rem)] p-4 pt-20 md:p-8 transition-all duration-300">
         <div className="md:max-w-5xl md:mx-auto">
              {children}
         </div>
@@ -40,7 +61,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="max-w-md mx-auto pointer-events-auto">
           <div className="glass rounded-2xl shadow-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border border-white/20 dark:border-white/10 p-2 flex items-center justify-between relative">
 
-            {/* Left Side (Home, Schedule) */}
+            {/* Left Side (Home, Messages) */}
             {navigation.slice(0, 2).map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;

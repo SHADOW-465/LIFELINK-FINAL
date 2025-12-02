@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
@@ -116,15 +116,12 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-900 shadow-md">
-            <Image
-              src={user?.imageUrl || '/placeholder-user.jpg'}
-              alt="Profile"
-              fill
-              className="object-cover"
-              sizes="80px"
-            />
-          </div>
+          <Avatar className="w-20 h-20 border-4 border-white dark:border-gray-900 shadow-md">
+            <AvatarImage src={user?.imageUrl} alt="Profile" />
+            <AvatarFallback className="text-2xl bg-gray-200 dark:bg-gray-800">
+              {user?.firstName?.charAt(0) || 'U'}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
               {userData?.fullName}
