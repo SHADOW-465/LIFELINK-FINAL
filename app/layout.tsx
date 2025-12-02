@@ -37,6 +37,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/icons/icon-192x192.png" />
         <meta name="theme-color" content="#E11D48" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="LifeLink" />
@@ -49,8 +50,7 @@ export default function RootLayout({
           publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
           signInUrl="/sign-in"
           signUpUrl="/sign-up"
-          afterSignInUrl="/dashboard"
-          afterSignUpUrl="/dashboard"
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
               colorPrimary: '#E11D48',
