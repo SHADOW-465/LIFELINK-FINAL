@@ -18,7 +18,7 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <MotionWrapper direction="down">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-700 font-medium text-sm mb-8 animate-fade-in">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-medium text-sm mb-8 animate-fade-in">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -30,7 +30,7 @@ export default function Home() {
             <MotionWrapper delay={0.1}>
               <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 tracking-tight leading-tight">
                 Connect. Donate. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500 dark:from-red-400 dark:to-rose-300">
                   Save a Life.
                 </span>
               </h1>
@@ -52,7 +52,7 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link href="/sign-in" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 py-6 text-lg rounded-full border-2 hover:bg-secondary transition-all">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 py-6 text-lg rounded-full border-2 hover:bg-secondary dark:hover:bg-secondary/30 transition-all">
                     Sign In
                   </Button>
                 </Link>
@@ -65,12 +65,12 @@ export default function Home() {
       {/* Stats Section */}
       <div className="container mx-auto px-4 -mt-20 relative z-20 mb-24">
         <MotionWrapper direction="up" delay={0.4}>
-          <div className="bg-white dark:bg-card rounded-3xl p-8 shadow-xl border border-border/50 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-100 dark:divide-gray-800">
+          <div className="bg-card rounded-3xl p-8 shadow-xl border border-border/50 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-100 dark:divide-gray-800">
             {[
-              { value: "10K+", label: "Lives Saved", color: "text-red-600" },
-              { value: "5K+", label: "Active Donors", color: "text-rose-600" },
-              { value: "2K+", label: "Requests Fulfilled", color: "text-orange-600" },
-              { value: "50+", label: "Partner Hospitals", color: "text-blue-600" },
+              { value: "10K+", label: "Lives Saved", color: "text-red-600 dark:text-red-400" },
+              { value: "5K+", label: "Active Donors", color: "text-rose-600 dark:text-rose-400" },
+              { value: "2K+", label: "Requests Fulfilled", color: "text-orange-600 dark:text-orange-400" },
+              { value: "50+", label: "Partner Hospitals", color: "text-blue-600 dark:text-blue-400" },
             ].map((stat, index) => (
               <div key={index} className="text-center px-2">
                 <div className={`text-3xl md:text-4xl font-bold ${stat.color} mb-2`}>{stat.value}</div>
@@ -96,23 +96,23 @@ export default function Home() {
               icon: Users,
               title: "Community Driven",
               desc: "Join a supportive network of donors and recipients helping each other.",
-              color: "bg-blue-100 text-blue-600"
+              color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300"
             },
             {
               icon: Shield,
               title: "Secure & Private",
               desc: "Your health data is encrypted and protected with enterprise-grade security.",
-              color: "bg-green-100 text-green-600"
+              color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300"
             },
             {
               icon: Zap,
               title: "Real-time Alerts",
               desc: "Get notified instantly when someone near you needs your specific blood type.",
-              color: "bg-yellow-100 text-yellow-600"
+              color: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300"
             }
           ].map((feature, index) => (
             <MotionWrapper key={index} delay={index * 0.2} direction="up">
-              <div className="group p-8 rounded-3xl bg-white dark:bg-card border border-border hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="group p-8 rounded-3xl bg-card border border-border hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <div className={`inline-flex items-center justify-center w-16 h-16 ${feature.color} rounded-2xl mb-6 transition-transform group-hover:scale-110`}>
                   <feature.icon className="w-8 h-8" />
                 </div>
