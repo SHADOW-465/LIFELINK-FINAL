@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Sidebar } from '@/components/ui/Sidebar';
 import { Home, Calendar, FileText, User, Plus } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -22,14 +23,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-background pb-24 md:pb-0">
+
+      {/* Desktop Sidebar */}
+      <Sidebar />
+
       {/* Main Content */}
-      <main className="container mx-auto max-w-md md:max-w-2xl lg:max-w-4xl">
-        {children}
+      <main className="container mx-auto max-w-md md:max-w-none md:ml-64 md:w-[calc(100%-16rem)] md:p-8 transition-all duration-300">
+        <div className="md:max-w-5xl md:mx-auto">
+             {children}
+        </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2 pointer-events-none">
+      {/* Bottom Navigation (Mobile Only) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2 pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto">
           <div className="glass rounded-2xl shadow-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border border-white/20 dark:border-white/10 p-2 flex items-center justify-between relative">
 

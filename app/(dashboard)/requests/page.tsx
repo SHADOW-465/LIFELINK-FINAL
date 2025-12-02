@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,19 @@ import { FileText, Plus, Search, MapPin, Clock, User, AlertTriangle, Droplets, N
 import Link from 'next/link';
 import MotionWrapper from '@/components/ui/MotionWrapper';
 import ShareButton from '@/components/ui/ShareButton';
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type RequestWithDistance = Doc<"bloodRequests"> & { distance?: number };
 
@@ -37,9 +49,11 @@ export default function RequestsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isDonating, setIsDonating] = useState<string | null>(null);
 
   const allRequests = useQuery(api.requests.getAllRequests);
   const userRequests = useQuery(api.requests.getUserRequests);
+  const donate = useMutation(api.requests.donateToRequest);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -54,6 +68,19 @@ export default function RequestsPage() {
       );
     }
   }, []);
+
+  const handleDonate = async (requestId: Id<"bloodRequests">) => {
+    setIsDonating(requestId);
+    try {
+      await donate({ requestId });
+      toast.success("Thank you! You have successfully volunteered to donate.");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to process donation. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsDonating(null);
+    }
+  };
 
   const getFilteredAndSortedRequests = () => {
     if (!allRequests) return [];
@@ -203,10 +230,36 @@ export default function RequestsPage() {
 
                         <div className="flex gap-2">
                           {!request.isFulfilled ? (
-                            <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-red-200 dark:shadow-none shadow-lg">
-                              <AlertTriangle className="w-4 h-4 mr-2" />
-                              Donate
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-red-200 dark:shadow-none shadow-lg"
+                                  disabled={isDonating === request._id}
+                                >
+                                  {isDonating === request._id ? 'Processing...' : (
+                                    <>
+                                      <AlertTriangle className="w-4 h-4 mr-2" />
+                                      Donate
+                                    </>
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirm Donation</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to volunteer to donate for this request?
+                                    By clicking continue, you confirm that you are available and willing to donate blood.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDonate(request._id)}>
+                                    Confirm Donation
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           ) : (
                             <Button variant="outline" className="flex-1 rounded-xl" disabled>
                               Completed
